@@ -79,7 +79,7 @@ fn lookup_exact(m: &str) -> Option<FormantParams> {
         //          voicing  F1    BW1   A1    F2    BW2   A2    F3    BW3   A3   asp    stop   dur
         "i" | "i:" => FormantParams::mono(V,  310.0, 45.0, 1.0, 2020.0,200.0, 0.9, 2960.0, 400.0, 0.7, 0.0, false, 0.0),
         "I" | "I2" => FormantParams::mono(V,  400.0, 50.0, 1.0, 1800.0,100.0, 0.9, 2570.0, 140.0, 0.7, 0.0, false, 0.0),
-        "e"        => FormantParams::mono(V,  530.0, 60.0, 1.0, 1680.0, 90.0, 0.9, 2500.0, 200.0, 0.7, 0.0, false, 0.0),
+        "E" | "e"       => FormantParams::mono(V,  530.0, 60.0, 1.0, 1680.0, 90.0, 0.9, 2500.0, 200.0, 0.7, 0.0, false, 0.0),
         "{"        => FormantParams::mono(V,  620.0, 70.0, 1.0, 1660.0,150.0, 0.9, 2430.0, 320.0, 0.7, 0.0, false, 0.0),
         "A" | "A:" | "a" | "a:" | "A@" => FormantParams::mono(V, 700.0,130.0, 1.0, 1220.0, 70.0, 0.9, 2600.0, 160.0, 0.7, 0.0, false, 0.0),
         "Q" | "O" | "O:" | "0" => FormantParams::mono(V,   600.0, 90.0, 1.0,  990.0,100.0, 0.9, 2570.0,  80.0, 0.7, 0.0, false, 0.0),

@@ -21,13 +21,19 @@ impl Default for TtsOptions {
     }
 }
 
-/// Install bundled espeak-ng language data to a temporary directory and return its path.
+/// Install bundled espeak-ng language data and return the data directory path.
 ///
 /// Requires the `bundled-data-en` (or equivalent) Cargo feature to be enabled.
 /// Safe to call multiple times — existing files are overwritten in place.
+///
+/// `path` — where to install the data. Pass `None` to use a default directory
+/// inside the OS temp folder (`<tmp>/klatt-rs-espeak-data`).
 #[cfg(feature = "bundled-data-en")]
-pub fn install_language(lang: &str) -> PathBuf {
-    let data_dir = std::env::temp_dir().join("klatt-rs-espeak-data");
+pub fn install_language(lang: &str, path: Option<&std::path::Path>) -> PathBuf {
+    let data_dir: PathBuf = match path {
+        Some(p) => p.to_path_buf(),
+        None    => std::env::temp_dir().join("klatt-rs-espeak-data"),
+    };
     std::fs::create_dir_all(&data_dir).expect("create espeak data dir");
     espeak_ng::install_bundled_language(&data_dir, lang).expect("install espeak language data");
     data_dir

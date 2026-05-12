@@ -220,3 +220,77 @@ pub fn synthesize(events: &[SynthEvent], settings: &VoiceSettings) -> Vec<i16> {
     let scale = if peak > 1e-6 { 30000.0 / peak } else { 1.0 };
     out.iter().map(|&s| (s * scale).clamp(-32768.0, 32767.0) as i16).collect()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::phonemes;
+
+    fn voice() -> VoiceSettings { VoiceSettings { base_pitch_hz: 200.0, ..Default::default() } }
+
+    fn event(mnem: &str, dur_ms: f32) -> SynthEvent {
+        SynthEvent {
+            params:      phonemes::lookup(mnem).unwrap(),
+            dur_ms,
+            pitch_start: 200.0,
+            pitch_end:   200.0,
+        }
+    }
+
+    // ── Output length ────────────────────────────────────────────────────────────
+
+    #[test]
+    fn output_length_matches_duration() {
+        let ev = event("@", 200.0);
+        let n_expected = ((200.0 * SR / 1000.0) as usize).max(1);
+        assert_eq!(synthesize(&[ev], &voice()).len(), n_expected);
+    }
+
+    #[test]
+    fn multiple_events_concatenate() {
+        let events = ["@", "m", "@"].map(|m| event(m, 100.0));
+        let n_expected = 3 * ((100.0 * SR / 1000.0) as usize).max(1);
+        assert_eq!(synthesize(&events, &voice()).len(), n_expected);
+    }
+
+    // ── Silence and signal ───────────────────────────────────────────────────────
+
+    #[test]
+    fn voiced_phoneme_produces_nonzero_output() {
+        let samples = synthesize(&[event("i", 100.0)], &voice());
+        assert!(samples.iter().any(|&s| s != 0), "voiced phoneme produced silence");
+    }
+
+    #[test]
+    fn silence_phoneme_is_near_silent() {
+        let samples = synthesize(&[event("_", 100.0)], &voice());
+        let peak = samples.iter().map(|&s| s.abs()).max().unwrap_or(0);
+        assert!(peak < 100, "silence phoneme too loud: peak={peak}");
+    }
+
+    #[test]
+    fn stop_hold_phase_is_silent() {
+        // First 40 % of a stop is the held closure — should be near-silent.
+        let dur_ms = 120.0;
+        let samples = synthesize(&[event("k", dur_ms)], &voice());
+        let hold_end = (samples.len() as f32 * 0.38) as usize;
+        let peak = samples[..hold_end].iter().map(|&s| s.abs()).max().unwrap_or(0);
+        assert!(peak < 50, "stop hold phase too loud: peak={peak}");
+    }
+
+    // ── Normalisation ────────────────────────────────────────────────────────────
+
+    #[test]
+    fn output_does_not_clip() {
+        let events = ["i", "A", "u"].map(|m| event(m, 100.0));
+        let samples = synthesize(&events, &voice());
+        assert!(samples.iter().all(|&s| s > i16::MIN && s < i16::MAX));
+    }
+
+    #[test]
+    fn voiced_output_is_normalised_near_peak() {
+        let samples = synthesize(&[event("A", 200.0)], &voice());
+        let peak = samples.iter().map(|&s| s.abs()).max().unwrap_or(0);
+        assert!(peak > 20_000, "output not normalised — peak={peak}");
+    }
+}

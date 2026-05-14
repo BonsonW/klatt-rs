@@ -117,8 +117,8 @@ pub fn text_to_events(text: &str, data_dir: &Path, v: &VoiceSettings, opts: &Tts
 /// Called automatically by [`text_to_events`] when [`TtsOptions::question_intonation`] is set
 /// and the text ends with `?`. Exposed publicly for manual use in other intonation pipelines.
 pub fn apply_question_intonation(events: &mut Vec<SynthEvent>) {
-    const RISE_COUNT: usize = 5;
-    const PEAK_SCALE: f32 = 1.4;
+    const RISE_COUNT: usize = 6;
+    const PEAK_SCALE: f32 = 1.2;
     let voiced_indices: Vec<usize> = events.iter().enumerate()
         .filter(|(_, ev)| ev.params.voicing > 0.3)
         .map(|(i, _)| i)

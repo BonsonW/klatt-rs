@@ -53,7 +53,17 @@ pub fn text_to_events(text: &str, data_dir: &Path, v: &VoiceSettings, opts: &Tts
     let mut pending_stress: u8 = 1;
 
     for code in &codes {
-        if code.is_boundary { continue; }
+        if code.is_boundary {
+            if v.word_gap_ms > 0.0 {
+                events.push(SynthEvent {
+                    params:      phonemes::lookup("_").unwrap(),
+                    dur_ms:      v.word_gap_ms * v.rate,
+                    pitch_start: v.base_pitch_hz,
+                    pitch_end:   v.base_pitch_hz,
+                });
+            }
+            continue;
+        }
         match code.code {
             0 => {}
             1..=7 => { pending_stress = code.code; }

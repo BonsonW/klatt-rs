@@ -38,6 +38,8 @@ pub struct VoiceSettings {
     pub tilt: f32,
     /// Glottal pulse shape 0..1.  0 = lax/breathy, 1 = tense/creaky.
     pub effort: f32,
+    /// Silence inserted between words in ms.  0 = no gap.
+    pub word_gap_ms: f32,
 }
 
 impl Default for VoiceSettings {
@@ -53,6 +55,7 @@ impl Default for VoiceSettings {
             aspiration:    0.0,
             tilt:          0.0,
             effort:        0.5,
+            word_gap_ms:   20.0,
         }
     }
 }

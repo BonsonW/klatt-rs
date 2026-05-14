@@ -122,7 +122,16 @@ fn frame_at(p: &FormantParams, pos: f32) -> Frame {
                 f2: p.f2, bw2: p.bw2, a2: p.a2,
                 f3: p.f3, bw3: p.bw3, a3: p.a3 }
         } else {
-            Frame::from_params(p)
+            // Release: decay voiced stops so the formant ring-down doesn't sound like a vowel.
+            let mut fr = Frame::from_params(p);
+            if p.voicing > 0.3 {
+                let decay = 1.0 - (pos - 0.60) / 0.40;  // 1.0 at burst end → 0.0 at phoneme boundary
+                fr.voicing *= decay;
+                fr.a1      *= decay;
+                fr.a2      *= decay;
+                fr.a3      *= decay;
+            }
+            fr
         };
     }
 
